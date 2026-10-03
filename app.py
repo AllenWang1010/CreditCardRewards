@@ -6,20 +6,30 @@ Created on Tue Jul 28 15:13:00 2026
 @author: Allen
 """
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import os
 import mysql.connector
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS
 from datetime import datetime
+from flask import Flask, request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app) 
 
+# DB_CONFIG = {
+#     'host': '127.0.0.1',
+#     'user': 'root',
+#     'password': 'Al040310100410', 
+#     'database': 'credit_card_app',
+#     'charset': 'utf8mb4'
+# }
+
 DB_CONFIG = {
-    'host': '127.0.0.1',
-    'user': 'root',
-    'password': 'Al040310100410', 
-    'database': 'credit_card_app',
+    'host': os.getenv('DB_HOST', '127.0.0.1'),
+    'port': int(os.getenv('DB_PORT', 3306)), # 🌟 新增 Port，因為 Aiven 不是用 3306
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', 'Al040310100410'), 
+    'database': os.getenv('DB_NAME', 'credit_card_app'),
     'charset': 'utf8mb4'
 }
 
@@ -291,8 +301,9 @@ def get_unicard_merchants():
         if 'cursor' in locals(): cursor.close()
         if 'conn' in locals(): conn.close()
 
+init_db()
 if __name__ == '__main__':
     # 🌟 在伺服器啟動前，先執行資料庫初始化檢查
-    init_db()
+    port = int(os.getenv('PORT', 5000))
     print("🚀 後端 API 伺服器啟動中... 正在監聽 Port 5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)
